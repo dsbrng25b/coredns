@@ -110,3 +110,34 @@ func TestSplitHostPortReverse(t *testing.T) {
 		}
 	}
 }
+
+func TestSplitHostPortReverseAddr(t *testing.T) {
+	tests := map[string]string{
+		"example.org.": "example.org.",
+		"10.0.0.0/0":   "in-addr.arpa.",
+		"10.0.0.0/7":   "in-addr.arpa.",
+		"10.0.0.0/8":   "10.in-addr.arpa.",
+		"10.0.0.0/9":   "10.in-addr.arpa.",
+		"10.0.0.0/15":  "10.in-addr.arpa.",
+		"10.0.0.0/16":  "0.10.in-addr.arpa.",
+		"10.0.0.0/17":  "0.10.in-addr.arpa.",
+		"10.0.0.0/23":  "0.10.in-addr.arpa.",
+		"10.0.0.0/24":  "0.0.10.in-addr.arpa.",
+		"10.0.0.0/25":  "0.0.10.in-addr.arpa.",
+		"10.1.2.3/32":  "3.2.1.10.in-addr.arpa.",
+		"2001:db8:1234::/48": "4.3.2.1.8.b.d.0.1.0.0.2.ip6.arpa.",
+		"2001:db8:1234::/51": "4.3.2.1.8.b.d.0.1.0.0.2.ip6.arpa.",
+		"2001:db8:1234::/52": "0.4.3.2.1.8.b.d.0.1.0.0.2.ip6.arpa.",
+	}
+	for in, expect := range tests {
+		got, _, _, err := SplitHostPort(in)
+		if err != nil {
+			t.Errorf("Expected no error, got %q for %s", in, err)
+		}
+
+		if got != expect {
+			t.Errorf("Expected %s, got %s for %s", expect, got, in)
+		}
+	}
+
+}
